@@ -1,41 +1,107 @@
-version: "3"
+version: '3.9'
 
 services:
   db:
     image: mariadb
     command: --max-allowed-packet=64MB
-    restart: always
+    restart: unless-stopped
     volumes:
       - db:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=
-    env_file:
-      - ./db.env
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: matomo
+      MYSQL_USER: matomo
+      MARIADB_AUTO_UPGRADE: 1
+      MARIADB_INITDB_SKIP_TZINFO: 1
 
   app:
     image: matomo:fpm-alpine
-    restart: always
+    restart: unless-stopped
     links:
       - db
     volumes:
-      # - ./config:/var/www/html/config:rw
-      # - ./logs:/var/www/html/logs
       - matomo:/var/www/html
     environment:
-      - MATOMO_DATABASE_HOST=db
-      - PHP_MEMORY_LIMIT=2048M
-    env_file:
-      - ./db.env
+      MATOMO_DATABASE_HOST: db
+      PHP_MEMORY_LIMIT: 2048M
+      MATOMO_DATABASE_ADAPTER: mysql
+      MATOMO_DATABASE_TABLES_PREFIX:
+      MATOMO_DATABASE_USERNAME: matomo
+      MATOMO_DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+      MATOMO_DATABASE_DBNAME: matomo
 
   web:
     image: nginx:alpine
-    restart: always
+    restart: unless-stopped
     volumes:
       - matomo:/var/www/html:ro
-      # see https://github.com/matomo-org/matomo-nginx
-      - ./matomo.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
-      - 8080:80
+      - ${PORT}:80
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    links:
+      - db
+    ports:
+      - ${ADMINER}:8080
+
+  backup:
+    image: mariadb
+    restart: "no"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: matomo
+      MYSQL_USER: matomo
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - db
+    links:
+      - db
+    volumes:
+      - ./backup:/backup
+    command: >
+      sh -c  "set -ex &&
+        export BACKUP_FILE=matomo_$$(date +'%Y-%m-%d_%H-%M-%S') &&
+        mysqldump --host db --extended-insert --no-autocommit --quick --single-transaction -uroot -p${MYSQL_ROOT_PASSWORD} matomo | gzip -c > /backup/$$BACKUP_FILE.sql.gz"
+    profiles:
+      - cli
+
+  restore:
+    image: mariadb
+    restart: "no"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: matomo
+      MYSQL_USER: matomo
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      - db
+    links:
+      - db
+    volumes:
+      - ./backup:/backup
+    command: >
+      sh -c  "set -ex &&
+        export FILE_TO_RESTORE=${BACKUP_FILE_TO_RESTORE:-no_file_to_restore} &&
+        test -f /backup/$$FILE_TO_RESTORE &&
+        gzip -dc /backup/$$FILE_TO_RESTORE | mysql --host db -uroot -p${MYSQL_ROOT_PASSWORD} matomo"
+    profiles:
+      - cli
+
+  sanitize:
+    image: mariadb
+    restart: "no"
+    depends_on:
+      - db
+    links:
+      - db
+    command: >
+      sh -c  "mysqlcheck --host db -uroot -p${MYSQL_ROOT_PASSWORD} -o --auto-repair --flush matomo"
+    profiles:
+      - cli
 
 volumes:
   db:
