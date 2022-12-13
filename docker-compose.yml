@@ -82,7 +82,7 @@ services:
     links:
       - db
     volumes:
-      - ./backup:/backup
+      - ./restore:/backup
     command: >
       sh -c  "set -ex &&
         export FILE_TO_RESTORE=${BACKUP_FILE_TO_RESTORE:-no_file_to_restore} &&
