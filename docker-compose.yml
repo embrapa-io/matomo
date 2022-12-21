@@ -40,6 +40,29 @@ services:
     ports:
       - ${PORT}:80
 
+  archive:
+    build:
+      context: .
+      dockerfile: ./docker/archive/Dockerfile
+    restart: unless-stopped
+    environment:
+      MATOMO_DATABASE_HOST: db
+      PHP_MEMORY_LIMIT: 2048M
+      MATOMO_DATABASE_ADAPTER: mysql
+      MATOMO_DATABASE_TABLES_PREFIX:
+      MATOMO_DATABASE_USERNAME: matomo
+      MATOMO_DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+      MATOMO_DATABASE_DBNAME: matomo
+      EMAIL: ${EMAIL}
+    volumes:
+      - matomo:/app
+    healthcheck:
+      test: php -l /app/console || exit 1
+      interval: 10s
+      timeout: 10s
+      start_period: 5s
+      retries: 5
+
   adminer:
     image: adminer
     restart: unless-stopped

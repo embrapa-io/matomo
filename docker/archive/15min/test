@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo $(date) >> /tmp/cron_test.txt
