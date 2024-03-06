@@ -1,3 +1,3 @@
 #!/bin/sh
 
-/usr/local/bin/php /app/console core:archive --url=https://track.embrapa.io >> /dev/null 2>&1
+/usr/local/bin/php /app/console core:archive --url=https://hit.embrapa.io >> /dev/null 2>&1
