@@ -29,3 +29,13 @@ Após o update, acertar as permissões dos arquivos:
 ```
 docker compose exec matomo chown -R www-data:www-data /var/www/html/tmp
 ```
+
+## Backup e Restore
+
+Para restaurar um arquivo:
+
+```
+docker compose build --force-rm --no-cache backup
+
+BACKUP_FILE_TO_RESTORE=matomo_2025-02-03_20-53-59.tar.gz docker compose run --rm --no-deps restore
+```

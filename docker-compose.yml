@@ -139,6 +139,7 @@ services:
         test -f /backup/$$FILE_TO_RESTORE &&
         RESTORE_DIR=$$(mktemp -d) &&
         tar -xf /backup/$$FILE_TO_RESTORE -C $$RESTORE_DIR --strip-components=1 &&
+        mkdir /matomo/config &&
         cp -r $$RESTORE_DIR/config/* /matomo/config/ &&
         gzip -dc $$RESTORE_DIR/dump.sql.gz | mariadb --host db -uroot -p${MYSQL_ROOT_PASSWORD} matomo"
     profiles:
