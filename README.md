@@ -4,16 +4,28 @@ Configuração de deploy do Matomo no ecossistema do Embrapa I/O.
 
 Baseado no [repositório de configuração do Matomo no Docker](https://github.com/matomo-org/docker).
 
+## Deploy
+
+```
+docker volume create matomo_db
+docker volume create matomo_data
+docker volume create --driver local --opt type=none --opt device=$(pwd)/backup --opt o=bind matomo_backup
+
+cp .env.example .env
+
+docker-compose up --force-recreate --build --remove-orphans --wait
+```
+
 ## Update
 
 Antes do update, forçar um `archive`:
 
 ```
-docker exec -it matomo-archive-1 /usr/local/bin/php /app/console core:archive --url=https://hit.embrapa.io
+docker compose exec archive /usr/local/bin/php /app/console core:archive --url=https://hit.embrapa.io
 ```
 
 Após o update, acertar as permissões dos arquivos:
 
 ```
-docker exec -it matomo-app-1 chown -R www-data:www-data /var/www/html/tmp
+docker compose exec matomo chown -R www-data:www-data /var/www/html/tmp
 ```
