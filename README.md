@@ -13,7 +13,7 @@ docker volume create --driver local --opt type=none --opt device=$(pwd)/backup -
 
 cp .env.example .env
 
-docker-compose up --force-recreate --build --remove-orphans --wait
+docker compose up --force-recreate --build --remove-orphans --wait
 ```
 
 ## Update
@@ -32,10 +32,30 @@ docker compose exec matomo chown -R www-data:www-data /var/www/html/tmp
 
 ## Backup e Restore
 
-Para restaurar um arquivo:
+Para restaurar um _dump_ do DB:
+
+### Método 1: utilizando o _script_ da imagem de _auto-backup_
+
+Veja a seção de _restore_ na [documentação da imagem de _auto-backup_](https://github.com/fradelg/docker-mysql-cron-backup). Em resumo, copie o _dump_ para o diretório `backup` e faça:
 
 ```
-docker compose build --force-rm --no-cache backup
+docker compose exec auto-backup /restore.sh /backup/dump.sql.gz
+```
 
-BACKUP_FILE_TO_RESTORE=matomo_2025-02-03_20-53-59.tar.gz docker compose run --rm --no-deps restore
+### Método 2: pelo cliente do MariaDB
+
+Acesse o _console_ do container do banco de dados:
+
+```
+docker compose exec db bash
+```
+
+Em seguida, faça:
+
+```
+cd /backup
+
+gzip -d dump.sql.gz
+
+mariadb --database matomo --user root --password < /backup/dump.sql
 ```

@@ -1,17 +1,16 @@
 services:
   db:
-    image: mariadb
+    image: mariadb:11
     command: --max-allowed-packet=64MB
     restart: unless-stopped
     volumes:
       - db:/var/lib/mysql
+      - backup:/backup
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      MYSQL_DATABASE: matomo
-      MYSQL_USER: matomo
-      MARIADB_AUTO_UPGRADE: 1
-      MARIADB_INITDB_SKIP_TZINFO: 1
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+      MARIADB_DATABASE: matomo
+      MARIADB_USER: matomo
     healthcheck:
       test: mariadb matomo --user=matomo --password='${MYSQL_PASSWORD}' --silent --execute "SELECT 1;"
       interval: 20s
@@ -25,6 +24,8 @@ services:
     environment:
       PHP_MEMORY_LIMIT: 2048M
       MATOMO_DATABASE_HOST: db
+      MATOMO_DATABASE_ADAPTER: mariadb
+      MATOMO_DATABASE_TABLES_PREFIX:
       MATOMO_DATABASE_DBNAME: matomo
       MATOMO_DATABASE_USERNAME: matomo
       MATOMO_DATABASE_PASSWORD: ${MYSQL_PASSWORD}
@@ -53,7 +54,7 @@ services:
     environment:
       MATOMO_DATABASE_HOST: db
       PHP_MEMORY_LIMIT: 2048M
-      MATOMO_DATABASE_ADAPTER: mysql
+      MATOMO_DATABASE_ADAPTER: mariadb
       MATOMO_DATABASE_TABLES_PREFIX:
       MATOMO_DATABASE_USERNAME: matomo
       MATOMO_DATABASE_PASSWORD: ${MYSQL_PASSWORD}
@@ -87,21 +88,22 @@ services:
       - backup:/backup
     environment:
       - MYSQL_HOST=db
-      - MYSQL_USER=matomo
-      - MYSQL_PASS=${MYSQL_PASSWORD}
-      - MAX_BACKUPS=60
+      - MYSQL_DATABASE=matomo
+      - MYSQL_USER=root
+      - MYSQL_PASS=${MYSQL_ROOT_PASSWORD}
+      - MAX_BACKUPS=90
       - INIT_BACKUP=0
       - CRON_TIME=0 3 * * *
       - GZIP_LEVEL=9
 
   backup:
-    image: mariadb
+    image: mariadb:11
     restart: "no"
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: matomo
-      MYSQL_USER: matomo
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: matomo
+      MARIADB_USER: matomo
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
     depends_on:
       db:
         condition: service_healthy
@@ -120,13 +122,13 @@ services:
       - cli
 
   restore:
-    image: mariadb
+    image: mariadb:11
     restart: "no"
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: matomo
-      MYSQL_USER: matomo
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: matomo
+      MARIADB_USER: matomo
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
     depends_on:
       db:
         condition: service_healthy
@@ -146,7 +148,7 @@ services:
       - cli
 
   sanitize:
-    image: mariadb
+    image: mariadb:11
     restart: "no"
     depends_on:
       db:
