@@ -95,8 +95,8 @@ services:
       - MYSQL_DATABASE=matomo
       - MYSQL_USER=root
       - MYSQL_PASS=${MYSQL_ROOT_PASSWORD}
-      - MAX_BACKUPS=90
-      - INIT_BACKUP=0
+      - MAX_BACKUPS=30
+      - INIT_BACKUP=1
       - CRON_TIME=0 3 * * *
       - GZIP_LEVEL=9
 
