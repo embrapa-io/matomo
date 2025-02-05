@@ -44,7 +44,7 @@ services:
       retries: 5
     post_start:
       - command: >
-          chown -R www-data:www-data /var/www/html/tmp &&
+          chown -R www-data:www-data /var/www/html &&
           /usr/local/bin/php /var/www/html/console core:create-security-files
 
   archive:

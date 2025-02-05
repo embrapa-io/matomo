@@ -27,7 +27,7 @@ docker compose exec archive /usr/local/bin/php /app/console core:archive --url=h
 Após o update, acertar as permissões dos arquivos:
 
 ```
-docker compose exec matomo chown -R www-data:www-data /var/www/html/tmp
+docker compose exec matomo chown -R www-data:www-data /var/www/html
 ```
 
 ## Backup e Restore
@@ -79,3 +79,7 @@ gzip -d dump.sql.gz
 
 mariadb --database matomo --user root --password < /backup/dump.sql
 ```
+
+## Geolocalização
+
+Após uma nova instalação (ou recuperação de _backup_) vá na [página de configuração na administração](https://matomo.embrapa.io/index.php?module=UserCountry&action=adminIndex) e configure a opção "**DBIP / GeoIP 2 (PHP)**". Trata-se basicamente de fazer download do BD de geolocalização no diretório `misc`.
