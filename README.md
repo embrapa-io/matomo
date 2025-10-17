@@ -6,13 +6,23 @@ Baseado no [repositório de configuração do Matomo no Docker](https://github.c
 
 ## Deploy
 
-```
-docker volume create matomo_db
-docker volume create matomo_data
-docker volume create --driver local --opt type=none --opt device=$(pwd)/backup --opt o=bind matomo_backup
+Copie e ajuste o arquivo de configuração:
 
+```bash
 cp .env.example .env
+```
 
+Crie os volumes externos:
+
+```bash
+docker volume create matomo_db && \
+docker volume create matomo_data && \
+docker volume create --driver local --opt type=none --opt device=$(pwd)/backup --opt o=bind matomo_backup
+```
+
+Suba a aplicação:
+
+```bash
 docker compose up --force-recreate --build --remove-orphans --wait
 ```
 
