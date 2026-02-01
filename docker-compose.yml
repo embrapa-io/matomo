@@ -1,6 +1,6 @@
 services:
   db:
-    image: mariadb:11
+    image: mariadb:11.8
     command: --max-allowed-packet=64MB
     restart: unless-stopped
     volumes:
