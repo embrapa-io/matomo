@@ -8,7 +8,7 @@ cd "$SCRIPT_DIR"
 
 pwd
 
-docker compose exec archive /usr/local/bin/php /app/console core:archive --url=https://hit.embrapa.io
+docker compose exec archive /usr/local/bin/php /app/console --matomo-domain=hit.embrapa.io core:archive
 
 docker compose exec matomo chown -R www-data:www-data /var/www/html
 
