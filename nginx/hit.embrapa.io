@@ -14,11 +14,10 @@ server {
 }
 
 server {
-  # MELHORIA: sintaxe atual do HTTP/2 (antes "listen ... ssl http2" — depreciado
-  # no nginx >= 1.25.1).
-  listen 443 ssl;
-  listen [::]:443 ssl;
-  http2 on;
+  # HTTP/2 habilitado no próprio listen (compatível com a versão de nginx desta
+  # VM; a forma "http2 on;" só existe a partir do nginx 1.25.1).
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
 
   server_name hit.embrapa.io;
 
