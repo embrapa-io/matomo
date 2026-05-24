@@ -40,6 +40,21 @@ server {
         return 200 '{"resource":"https://mcp.hit.embrapa.io","authorization_servers":["https://hit.embrapa.io"]}';
     }
 
+    # Fake Dynamic Client Registration (RFC 7591): devolve SEMPRE o cliente
+    # público pré-registrado no Matomo, para o usuário leigo não precisar
+    # informar o Client ID (deixa o campo em branco no conector).
+    # O cliente "b96a4822..." precisa ter registradas as redirect URIs de cada
+    # plataforma (hoje: Claude). Para ChatGPT/Cursor, somar as respectivas URIs
+    # aqui e no cadastro do cliente no Matomo.
+    location = /oauth/register {
+        default_type application/json;
+        add_header Access-Control-Allow-Origin "*" always;
+        add_header Access-Control-Allow-Methods "POST, OPTIONS" always;
+        add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+        if ($request_method = OPTIONS) { return 204; }
+        return 201 '{"client_id":"b96a4822d759e9250911a9982dca5977","token_endpoint_auth_method":"none","grant_types":["authorization_code","refresh_token"],"response_types":["code"],"redirect_uris":["https://claude.ai/api/mcp/auth_callback"]}';
+    }
+
     # Endpoint MCP: qualquer caminho é reescrito para a query fixa do McpServer.
     location / {
         rewrite ^ /index.php?module=API&method=McpServer.mcp&format=mcp break;
