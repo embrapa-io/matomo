@@ -1,0 +1,4 @@
+{
+  "resource": "https://hit.embrapa.io/index.php?module=API&method=McpServer.mcp&format=mcp",
+  "authorization_servers": ["https://hit.embrapa.io"]
+}
