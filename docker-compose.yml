@@ -1,7 +1,7 @@
 services:
   db:
     image: mariadb:11.8
-    command: --max-allowed-packet=64MB
+    command: --max-allowed-packet=64MB --innodb-buffer-pool-size=12G
     restart: unless-stopped
     logging:
       driver: json-file
