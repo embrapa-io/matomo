@@ -103,6 +103,10 @@ else
     echo -e "⚠️  ${YELLOW}Versão final lida: v${FINAL} (esperado v${VERSION}) — verifique!${NC}"
 fi
 echo ""
+echo -e "⚠️  Confira o diagnóstico de integridade (Administração → Diagnóstico): a cópia por tar"
+echo -e "   NÃO remove arquivos que a versão nova aboliu — o Matomo lista as sobras e fornece o"
+echo -e "   comando rm; execute-o dentro do container: docker compose exec -T matomo rm \"...\""
+echo ""
 echo -e "⚠️  Valide na UI (https://hit.embrapa.io) e registre a versão no repositório — copie e cole:"
 echo ""
 echo "git add docker/matomo/Dockerfile && git commit -m \"Atualização do Matomo para a v${VERSION}.\" && git push origin main"
