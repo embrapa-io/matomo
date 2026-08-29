@@ -41,7 +41,19 @@ docker compose up --force-recreate --build --remove-orphans --wait
 
 O script valida a versão (atual < alvo), baixa a imagem oficial, pina a versão no `docker/matomo/Dockerfile`, recria o container, copia os arquivos novos para o volume, ajusta permissões e roda a migração do banco (`console core:update`). Ao final, imprime o comando de commit+push para registrar a versão no repositório.
 
-3. Valide na UI (versão, tracking, próximo ciclo do archive).
+3. Valide na UI (versão, tracking, próximo ciclo do archive) e o diagnóstico de integridade (o script indica como remover sobras da versão anterior).
+
+> **Plugins** (marketplace) podem ser atualizados **pela UI** normalmente — são pequenos e sem migração pesada. Após atualizar `OAuth2`/`McpServer`, testar o cliente MCP (os metadados `.well-known` customizados dependem deles).
+
+## Logs (Loki)
+
+Os containers enviam logs ao Loki da plataforma via **plugin Docker** (`log-driver: loki` no `/etc/docker/daemon.json` do host — o compose **não** define `logging:` justamente para herdar esse default). Requisitos no host:
+
+```bash
+docker plugin install grafana/loki-docker-driver:3.5.5 --alias loki --grant-all-permissions
+```
+
+No `daemon.json`, usar o padrão da plataforma com `loki-external-labels: host=hit.embrapa.io,job=docker` (o hostname da VM é curto — sem o label explícito, os logs chegariam com identidade divergente do Alloy) e `systemctl restart docker`. ⚠️ Aplicar o `daemon.json` **antes** de recriar os containers — sem o default do daemon, containers recriados cairiam em `json-file` sem rotação.
 
 ## Backup e Restore
 

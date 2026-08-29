@@ -3,11 +3,6 @@ services:
     image: mariadb:11.8
     command: --max-allowed-packet=64MB --innodb-buffer-pool-size=12G
     restart: unless-stopped
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
     volumes:
       - db:/var/lib/mysql
       - backup:/backup
@@ -28,11 +23,6 @@ services:
       context: ./docker/matomo
       dockerfile: Dockerfile
     restart: unless-stopped
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
     environment:
       PHP_MEMORY_LIMIT: 2048M
       MATOMO_DATABASE_HOST: db
@@ -64,11 +54,6 @@ services:
       context: .
       dockerfile: ./docker/archive/Dockerfile
     restart: unless-stopped
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
     depends_on:
       matomo:
         condition: service_healthy
@@ -93,11 +78,6 @@ services:
   adminer:
     image: adminer
     restart: unless-stopped
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
     depends_on:
       db:
         condition: service_healthy
@@ -107,11 +87,6 @@ services:
   auto-backup:
     image: fradelg/mysql-cron-backup
     restart: unless-stopped
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
     depends_on:
       db:
         condition: service_healthy
