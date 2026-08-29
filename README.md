@@ -30,17 +30,18 @@ docker compose up --force-recreate --build --remove-orphans --wait
 
 ## Update
 
-Antes do update, forçar um `archive`:
+⚠️ **Sempre pela CLI** — nesta instância (~1000 sites) a migração de banco pela UI pode estourar timeout e deixar o schema meio migrado. Detalhe importante da imagem oficial: o entrypoint **só popula o volume vazio** (primeira instalação) — ele nunca atualiza os arquivos, por isso a cópia manual faz parte do fluxo.
+
+1. Execute o backup + archive: é o `matomo.sh` dos [_scripts_ da plataforma](https://github.com/embrapa-io/backup).
+2. Rode o script de upgrade com a versão alvo:
 
 ```bash
-docker compose exec archive /usr/local/bin/php /app/console core:archive --url=https://hit.embrapa.io
+./upgrade.sh 5.13.0
 ```
 
-Após o update, acertar as permissões dos arquivos:
+O script valida a versão (atual < alvo), baixa a imagem oficial, pina a versão no `docker/matomo/Dockerfile`, recria o container, copia os arquivos novos para o volume, ajusta permissões e roda a migração do banco (`console core:update`). Ao final, imprime o comando de commit+push para registrar a versão no repositório.
 
-```bash
-docker compose exec matomo chown -R www-data:www-data /var/www/html
-```
+3. Valide na UI (versão, tracking, próximo ciclo do archive).
 
 ## Backup e Restore
 
