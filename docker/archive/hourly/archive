@@ -1,3 +1,8 @@
 #!/bin/sh
 
 /usr/local/bin/php /app/console core:archive --url=https://hit.embrapa.io >> /dev/null 2>&1
+
+# O core:archive roda como root e compila templates em /app/tmp; sem devolver a posse ao www-data do Apache
+# (uid 33 na imagem Debian do matomo, diferente do www-data uid 82 desta imagem Alpine), os widgets que usam
+# esses templates dão 500 com "Unable to write in the cache directory".
+chown -R 33:33 /app/tmp
