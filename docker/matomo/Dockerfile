@@ -1,4 +1,4 @@
-FROM matomo:5.13.0
+FROM matomo:5.14.0
 
 # Habilita mod_headers (CORS dos metadados) e mod_rewrite (repasse do Authorization)
 RUN a2enmod headers rewrite
