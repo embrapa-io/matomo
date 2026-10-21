@@ -41,7 +41,7 @@ docker compose up --force-recreate --build --remove-orphans --wait
 
 O script valida a versão (atual < alvo), baixa a imagem oficial, pina a versão no `docker/matomo/Dockerfile`, recria o container, copia os arquivos novos para o volume, ajusta permissões e roda a migração do banco (`console core:update`). Ao final, imprime o comando de commit+push para registrar a versão no repositório.
 
-3. Valide na UI (versão, tracking, próximo ciclo do archive) e o diagnóstico de integridade (o script indica como remover sobras da versão anterior).
+3. Valide na UI (versão, tracking, próximo ciclo do archive). O script já remove os arquivos que a versão nova aboliu, pela lista do próprio diagnóstico de integridade do Matomo (`console diagnostics:run`), nunca em `config/`, `tmp/` ou `misc/user/`; confira em Administração → Diagnóstico se não sobrou aviso.
 
 > **Plugins** (marketplace) podem ser atualizados **pela UI** normalmente — são pequenos e sem migração pesada. Após atualizar `OAuth2`/`McpServer`, testar o cliente MCP (os metadados `.well-known` customizados dependem deles).
 

@@ -103,9 +103,23 @@ else
     echo -e "⚠️  ${YELLOW}Versão final lida: v${FINAL} (esperado v${VERSION}) — verifique!${NC}"
 fi
 echo ""
-echo -e "⚠️  Confira o diagnóstico de integridade (Administração → Diagnóstico): a cópia por tar"
-echo -e "   NÃO remove arquivos que a versão nova aboliu — o Matomo lista as sobras e fornece o"
-echo -e "   comando rm; execute-o dentro do container: docker compose exec -T matomo rm \"...\""
+
+# A cópia por tar NÃO remove os arquivos que a versão nova aboliu. Quem sabe quais são é o
+# próprio Matomo (manifesto da versão): o diagnóstico lista as sobras com um 'rm' pronto.
+# Só são apagados caminhos dentro de /var/www/html e fora de config/, tmp/ e misc/user/.
+echo -e "ℹ️  Removendo arquivos que a v${VERSION} não tem mais (diagnóstico de integridade)..."
+LEFTOVERS=$(docker compose exec -T matomo php /var/www/html/console diagnostics:run 2>/dev/null \
+    | grep -E 'rm "/var/www/html/' | grep -oE '"/var/www/html/[^"]+"' | tr -d '"' \
+    | grep -vE '^/var/www/html/(config|tmp|misc/user)/' || true)
+if [ -n "$LEFTOVERS" ]; then
+    echo "$LEFTOVERS" | sed 's|^|   - |'
+    # shellcheck disable=SC2086
+    docker compose exec -T matomo rm -f $LEFTOVERS
+    echo -e "✅ ${GREEN}$(echo "$LEFTOVERS" | wc -l | tr -d ' ') arquivo(s) da versão anterior removido(s).${NC}"
+else
+    echo -e "✅ ${GREEN}Nenhum arquivo sobrando da versão anterior.${NC}"
+fi
+echo -e "   Confira em Administração → Diagnóstico se a integridade dos arquivos ficou sem aviso."
 echo ""
 echo -e "⚠️  Valide na UI (https://hit.embrapa.io) e registre a versão no repositório — copie e cole:"
 echo ""
